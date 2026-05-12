@@ -37,9 +37,6 @@ providers:
     provider_type: inline::builtin
     config:
       persistence:
-        agent_state:
-          namespace: responses
-          backend: kv_default
         responses:
           table_name: responses
           backend: sql_default
@@ -90,8 +87,8 @@ storage:
       table_name: openai_conversations
       backend: sql_default
     prompts:
-      namespace: prompts
-      backend: kv_default
+      table_name: prompts
+      backend: sql_default
 registered_resources:
   models:
   - metadata: {}

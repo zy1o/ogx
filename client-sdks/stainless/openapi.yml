@@ -701,6 +701,7 @@ paths:
                 - $ref: '#/components/schemas/OpenAIResponseOutputMessageMCPCall'
                 - $ref: '#/components/schemas/OpenAIResponseOutputMessageMCPListTools'
                 - $ref: '#/components/schemas/OpenAIResponseOutputMessageReasoningItem'
+                - $ref: '#/components/schemas/OpenAIResponseCompaction'
                 discriminator:
                   propertyName: type
                   mapping:
@@ -714,6 +715,7 @@ paths:
                     mcp_call: '#/components/schemas/OpenAIResponseOutputMessageMCPCall'
                     mcp_list_tools: '#/components/schemas/OpenAIResponseOutputMessageMCPListTools'
                     reasoning: '#/components/schemas/OpenAIResponseOutputMessageReasoningItem'
+                    compaction: '#/components/schemas/OpenAIResponseCompaction'
                 title: Response Retrieve Item V1 Conversations  Conversation Id  Items  Item Id  Get
         '400':
           $ref: '#/components/responses/BadRequest400'
@@ -749,14 +751,24 @@ paths:
           description: The item identifier.
           title: Item Id
         description: The item identifier.
+      - name: include
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: array
+            items:
+              $ref: '#/components/schemas/ConversationItemInclude'
+          - type: 'null'
+          title: Include
     delete:
       responses:
         '200':
-          description: The deleted item resource.
+          description: The parent conversation object.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ConversationItemDeletedResource'
+                $ref: '#/components/schemas/Conversation'
         '400':
           $ref: '#/components/responses/BadRequest400'
           description: Bad Request
@@ -1948,6 +1960,7 @@ paths:
             schema:
               $ref: '#/components/schemas/RunShieldRequest'
         required: true
+      deprecated: true
   /v1/shields:
     get:
       responses:
@@ -1974,6 +1987,7 @@ paths:
       summary: List all shields.
       description: List all shields.
       operationId: list_shields_v1_shields_get
+      deprecated: true
     post:
       responses:
         '200':
@@ -2041,6 +2055,7 @@ paths:
           description: The identifier of the shield to get.
           title: Identifier
         description: The identifier of the shield to get.
+      deprecated: true
     delete:
       responses:
         '400':
@@ -3379,6 +3394,175 @@ paths:
       summary: Get service version
       description: Get the version of the service.
       operationId: version_v1alpha_admin_version_get
+  /v1alpha/admin/connectors:
+    get:
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListConnectorsResponse'
+        '400':
+          description: Bad Request
+          $ref: '#/components/responses/BadRequest400'
+        '429':
+          description: Too Many Requests
+          $ref: '#/components/responses/TooManyRequests429'
+        '500':
+          description: Internal Server Error
+          $ref: '#/components/responses/InternalServerError500'
+        default:
+          description: Default Response
+          $ref: '#/components/responses/DefaultError'
+      tags:
+      - Admin
+      summary: List all connectors.
+      description: List all configured connectors.
+      operationId: list_connectors_v1alpha_admin_connectors_get
+  /v1alpha/admin/connectors/{connector_id}/tools/{tool_name}:
+    get:
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ToolDef'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+          description: Bad Request
+        '429':
+          $ref: '#/components/responses/TooManyRequests429'
+          description: Too Many Requests
+        '500':
+          $ref: '#/components/responses/InternalServerError500'
+          description: Internal Server Error
+        default:
+          $ref: '#/components/responses/DefaultError'
+          description: Default Response
+      tags:
+      - Admin
+      summary: Get a tool by name from a connector.
+      description: Get a tool definition by its name from a connector.
+      operationId: get_connector_tool_v1alpha_admin_connectors__connector_id__tools__tool_name__get
+      parameters:
+      - name: connector_id
+        in: path
+        required: true
+        schema:
+          type: string
+          description: Identifier for the connector
+          title: Connector Id
+        description: Identifier for the connector
+      - name: tool_name
+        in: path
+        required: true
+        schema:
+          type: string
+          description: Name of the tool
+          title: Tool Name
+        description: Name of the tool
+      - name: authorization
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: Authorization token
+          title: Authorization
+        description: Authorization token
+  /v1alpha/admin/connectors/{connector_id}/tools:
+    get:
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListToolsResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+          description: Bad Request
+        '429':
+          $ref: '#/components/responses/TooManyRequests429'
+          description: Too Many Requests
+        '500':
+          $ref: '#/components/responses/InternalServerError500'
+          description: Internal Server Error
+        default:
+          $ref: '#/components/responses/DefaultError'
+          description: Default Response
+      tags:
+      - Admin
+      summary: List tools from a connector.
+      description: List all tools available from a connector.
+      operationId: list_connector_tools_v1alpha_admin_connectors__connector_id__tools_get
+      parameters:
+      - name: connector_id
+        in: path
+        required: true
+        schema:
+          type: string
+          description: Identifier for the connector
+          title: Connector Id
+        description: Identifier for the connector
+      - name: authorization
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: Authorization token
+          title: Authorization
+        description: Authorization token
+  /v1alpha/admin/connectors/{connector_id}:
+    get:
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Connector'
+        '400':
+          $ref: '#/components/responses/BadRequest400'
+          description: Bad Request
+        '429':
+          $ref: '#/components/responses/TooManyRequests429'
+          description: Too Many Requests
+        '500':
+          $ref: '#/components/responses/InternalServerError500'
+          description: Internal Server Error
+        default:
+          $ref: '#/components/responses/DefaultError'
+          description: Default Response
+      tags:
+      - Admin
+      summary: Get a connector by its ID.
+      description: Get a connector by its ID.
+      operationId: get_connector_v1alpha_admin_connectors__connector_id__get
+      parameters:
+      - name: connector_id
+        in: path
+        required: true
+        schema:
+          type: string
+          description: Identifier for the connector
+          title: Connector Id
+        description: Identifier for the connector
+      - name: authorization
+        in: query
+        required: false
+        schema:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: Authorization token
+          title: Authorization
+        description: Authorization token
   /v1/responses/compact:
     post:
       responses:
@@ -3569,175 +3753,6 @@ paths:
           multipart/form-data:
             schema:
               $ref: '#/components/schemas/Body_process_file_v1alpha_file_processors_process_post'
-  /v1beta/connectors:
-    get:
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ListConnectorsResponse'
-        '400':
-          description: Bad Request
-          $ref: '#/components/responses/BadRequest400'
-        '429':
-          description: Too Many Requests
-          $ref: '#/components/responses/TooManyRequests429'
-        '500':
-          description: Internal Server Error
-          $ref: '#/components/responses/InternalServerError500'
-        default:
-          description: Default Response
-          $ref: '#/components/responses/DefaultError'
-      tags:
-      - Connectors
-      summary: List all connectors.
-      description: List all configured connectors.
-      operationId: list_connectors_v1beta_connectors_get
-  /v1beta/connectors/{connector_id}/tools/{tool_name}:
-    get:
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ToolDef'
-        '400':
-          $ref: '#/components/responses/BadRequest400'
-          description: Bad Request
-        '429':
-          $ref: '#/components/responses/TooManyRequests429'
-          description: Too Many Requests
-        '500':
-          $ref: '#/components/responses/InternalServerError500'
-          description: Internal Server Error
-        default:
-          $ref: '#/components/responses/DefaultError'
-          description: Default Response
-      tags:
-      - Connectors
-      summary: Get a tool by name from a connector.
-      description: Get a tool definition by its name from a connector.
-      operationId: get_connector_tool_v1beta_connectors__connector_id__tools__tool_name__get
-      parameters:
-      - name: connector_id
-        in: path
-        required: true
-        schema:
-          type: string
-          description: Identifier for the connector
-          title: Connector Id
-        description: Identifier for the connector
-      - name: tool_name
-        in: path
-        required: true
-        schema:
-          type: string
-          description: Name of the tool
-          title: Tool Name
-        description: Name of the tool
-      - name: authorization
-        in: query
-        required: false
-        schema:
-          anyOf:
-          - type: string
-          - type: 'null'
-          description: Authorization token
-          title: Authorization
-        description: Authorization token
-  /v1beta/connectors/{connector_id}/tools:
-    get:
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ListToolsResponse'
-        '400':
-          $ref: '#/components/responses/BadRequest400'
-          description: Bad Request
-        '429':
-          $ref: '#/components/responses/TooManyRequests429'
-          description: Too Many Requests
-        '500':
-          $ref: '#/components/responses/InternalServerError500'
-          description: Internal Server Error
-        default:
-          $ref: '#/components/responses/DefaultError'
-          description: Default Response
-      tags:
-      - Connectors
-      summary: List tools from a connector.
-      description: List all tools available from a connector.
-      operationId: list_connector_tools_v1beta_connectors__connector_id__tools_get
-      parameters:
-      - name: connector_id
-        in: path
-        required: true
-        schema:
-          type: string
-          description: Identifier for the connector
-          title: Connector Id
-        description: Identifier for the connector
-      - name: authorization
-        in: query
-        required: false
-        schema:
-          anyOf:
-          - type: string
-          - type: 'null'
-          description: Authorization token
-          title: Authorization
-        description: Authorization token
-  /v1beta/connectors/{connector_id}:
-    get:
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Connector'
-        '400':
-          $ref: '#/components/responses/BadRequest400'
-          description: Bad Request
-        '429':
-          $ref: '#/components/responses/TooManyRequests429'
-          description: Too Many Requests
-        '500':
-          $ref: '#/components/responses/InternalServerError500'
-          description: Internal Server Error
-        default:
-          $ref: '#/components/responses/DefaultError'
-          description: Default Response
-      tags:
-      - Connectors
-      summary: Get a connector by its ID.
-      description: Get a connector by its ID.
-      operationId: get_connector_v1beta_connectors__connector_id__get
-      parameters:
-      - name: connector_id
-        in: path
-        required: true
-        schema:
-          type: string
-          description: Identifier for the connector
-          title: Connector Id
-        description: Identifier for the connector
-      - name: authorization
-        in: query
-        required: false
-        schema:
-          anyOf:
-          - type: string
-          - type: 'null'
-          description: Authorization token
-          title: Authorization
-        description: Authorization token
   /v1/messages:
     post:
       responses:
@@ -5363,6 +5378,7 @@ components:
     ConversationItem:
       discriminator:
         mapping:
+          compaction: '#/components/schemas/OpenAIResponseCompaction'
           file_search_call: '#/components/schemas/OpenAIResponseOutputMessageFileSearchToolCall'
           function_call: '#/components/schemas/OpenAIResponseOutputMessageFunctionToolCall'
           function_call_output: '#/components/schemas/OpenAIResponseInputFunctionToolCallOutput'
@@ -5395,7 +5411,9 @@ components:
         title: OpenAIResponseOutputMessageMCPListTools
       - $ref: '#/components/schemas/OpenAIResponseOutputMessageReasoningItem'
         title: OpenAIResponseOutputMessageReasoningItem
-      title: OpenAIResponseMessage | ... (10 variants)
+      - $ref: '#/components/schemas/OpenAIResponseCompaction'
+        title: OpenAIResponseCompaction
+      title: OpenAIResponseMessage | ... (11 variants)
     OpenAIResponseAnnotationCitation:
       properties:
         type:
@@ -6014,9 +6032,12 @@ components:
                 title: OpenAIResponseOutputMessageMCPListTools
               - $ref: '#/components/schemas/OpenAIResponseOutputMessageReasoningItem'
                 title: OpenAIResponseOutputMessageReasoningItem
+              - $ref: '#/components/schemas/OpenAIResponseCompaction'
+                title: OpenAIResponseCompaction
               discriminator:
                 propertyName: type
                 mapping:
+                  compaction: '#/components/schemas/OpenAIResponseCompaction'
                   file_search_call: '#/components/schemas/OpenAIResponseOutputMessageFileSearchToolCall'
                   function_call: '#/components/schemas/OpenAIResponseOutputMessageFunctionToolCall'
                   function_call_output: '#/components/schemas/OpenAIResponseInputFunctionToolCallOutput'
@@ -6027,7 +6048,7 @@ components:
                   message: '#/components/schemas/OpenAIResponseMessage-Input'
                   reasoning: '#/components/schemas/OpenAIResponseOutputMessageReasoningItem'
                   web_search_call: '#/components/schemas/OpenAIResponseOutputMessageWebSearchToolCall'
-              title: OpenAIResponseMessage-Input | ... (10 variants)
+              title: OpenAIResponseMessage-Input | ... (11 variants)
             type: array
           - type: 'null'
           description: Initial items to include in the conversation context.
@@ -6065,14 +6086,6 @@ components:
             type: object
           - type: 'null'
           description: Set of 16 key-value pairs that can be attached to an object. This can be useful for storing additional information about the object in a structured format, and querying for objects via API or the dashboard.
-        items:
-          anyOf:
-          - items:
-              additionalProperties: true
-              type: object
-            type: array
-          - type: 'null'
-          description: Initial items to include in the conversation context. You may add up to 20 items at a time.
       type: object
       required:
       - id
@@ -6102,7 +6115,8 @@ components:
           type: string
           title: Object
           description: Object type
-          default: conversation.deleted
+          enum:
+          - conversation.deleted
         deleted:
           type: boolean
           title: Deleted
@@ -6118,8 +6132,9 @@ components:
         object:
           type: string
           title: Object
-          description: Object type
-          default: list
+          description: The type of object returned, must be list.
+          enum:
+          - list
         data:
           items:
             oneOf:
@@ -6143,9 +6158,12 @@ components:
               title: OpenAIResponseOutputMessageMCPListTools
             - $ref: '#/components/schemas/OpenAIResponseOutputMessageReasoningItem'
               title: OpenAIResponseOutputMessageReasoningItem
+            - $ref: '#/components/schemas/OpenAIResponseCompaction'
+              title: OpenAIResponseCompaction
             discriminator:
               propertyName: type
               mapping:
+                compaction: '#/components/schemas/OpenAIResponseCompaction'
                 file_search_call: '#/components/schemas/OpenAIResponseOutputMessageFileSearchToolCall'
                 function_call: '#/components/schemas/OpenAIResponseOutputMessageFunctionToolCall'
                 function_call_output: '#/components/schemas/OpenAIResponseInputFunctionToolCallOutput'
@@ -6156,7 +6174,7 @@ components:
                 message: '#/components/schemas/OpenAIResponseMessage-Output'
                 reasoning: '#/components/schemas/OpenAIResponseOutputMessageReasoningItem'
                 web_search_call: '#/components/schemas/OpenAIResponseOutputMessageWebSearchToolCall'
-            title: OpenAIResponseMessage-Output | ... (10 variants)
+            title: OpenAIResponseMessage-Output | ... (11 variants)
           type: array
           title: Data
           description: List of conversation items
@@ -6164,20 +6182,22 @@ components:
           anyOf:
           - type: string
           - type: 'null'
-          description: The ID of the first item in the list
+          description: The ID of the first item in the list.
         last_id:
           anyOf:
           - type: string
           - type: 'null'
-          description: The ID of the last item in the list
+          description: The ID of the last item in the list.
         has_more:
           type: boolean
           title: Has More
-          description: Whether there are more items available
-          default: false
+          description: Whether there are more items available.
       type: object
       required:
       - data
+      - first_id
+      - last_id
+      - has_more
       title: ConversationItemList
       description: List of conversation items with pagination.
     AddItemsRequest:
@@ -6205,9 +6225,12 @@ components:
               title: OpenAIResponseOutputMessageMCPListTools
             - $ref: '#/components/schemas/OpenAIResponseOutputMessageReasoningItem'
               title: OpenAIResponseOutputMessageReasoningItem
+            - $ref: '#/components/schemas/OpenAIResponseCompaction'
+              title: OpenAIResponseCompaction
             discriminator:
               propertyName: type
               mapping:
+                compaction: '#/components/schemas/OpenAIResponseCompaction'
                 file_search_call: '#/components/schemas/OpenAIResponseOutputMessageFileSearchToolCall'
                 function_call: '#/components/schemas/OpenAIResponseOutputMessageFunctionToolCall'
                 function_call_output: '#/components/schemas/OpenAIResponseInputFunctionToolCallOutput'
@@ -6218,7 +6241,7 @@ components:
                 message: '#/components/schemas/OpenAIResponseMessage-Input'
                 reasoning: '#/components/schemas/OpenAIResponseOutputMessageReasoningItem'
                 web_search_call: '#/components/schemas/OpenAIResponseOutputMessageWebSearchToolCall'
-            title: OpenAIResponseMessage-Input | ... (10 variants)
+            title: OpenAIResponseMessage-Input | ... (11 variants)
           type: array
           maxItems: 20
           title: Items
@@ -6229,26 +6252,27 @@ components:
       title: AddItemsRequest
       description: Request model for adding items to a conversation.
     ConversationItemDeletedResource:
+      description: Response for deleted conversation item.
       properties:
         id:
-          type: string
-          title: Id
           description: The deleted item identifier
-        object:
+          title: Id
           type: string
-          title: Object
+        object:
           description: Object type
-          default: conversation.item.deleted
+          title: Object
+          type: string
+          enum:
+          - conversation.item.deleted
         deleted:
-          type: boolean
-          title: Deleted
-          description: Whether the object was deleted
           default: true
-      type: object
+          description: Whether the object was deleted
+          title: Deleted
+          type: boolean
       required:
       - id
       title: ConversationItemDeletedResource
-      description: Response for deleted conversation item.
+      type: object
     OpenAIEmbeddingsRequestWithExtraBody:
       properties:
         model:
@@ -6383,9 +6407,16 @@ components:
       type: string
       enum:
       - assistants
+      - assistants_output
       - batch
+      - batch_output
+      - evals
+      - fine-tune
+      - fine-tune-results
+      - vision
+      - user_data
       title: OpenAIFilePurpose
-      description: Valid purpose values for OpenAI Files API.
+      description: Valid purpose values on the OpenAI File response object.
     ListOpenAIFileResponse:
       properties:
         data:
@@ -6441,10 +6472,9 @@ components:
           title: Created At
           description: The Unix timestamp (in seconds) for when the file was created.
         expires_at:
-          anyOf:
-          - type: integer
-          - type: 'null'
-          description: The Unix timestamp (in seconds) for when the file expires.
+          type: integer
+          title: Expires At
+          description: The Unix timestamp (in seconds) for when the file will expire.
         filename:
           type: string
           title: Filename
@@ -6473,7 +6503,6 @@ components:
       - filename
       - purpose
       - status
-      - status_details
       title: OpenAIFileObject
       description: OpenAI File object as defined in the OpenAI Files API.
     ExpiresAfter:
@@ -11013,14 +11042,14 @@ components:
           title: File
           description: The file to upload.
         purpose:
-          $ref: '#/components/schemas/OpenAIFilePurpose'
+          $ref: '#/components/schemas/OpenAIFileUploadPurpose'
           description: The intended purpose of the uploaded file.
         expires_after:
           anyOf:
           - $ref: '#/components/schemas/ExpiresAfter'
             title: ExpiresAfter
           - type: 'null'
-          description: Optional expiration settings.
+          description: Optional expiration settings for the file.
           title: ExpiresAfter
       type: object
       required:
@@ -12495,6 +12524,17 @@ components:
       - usage
       title: OpenAICompactedResponse
       description: Response from compacting a conversation.
+    OpenAIFileUploadPurpose:
+      type: string
+      enum:
+      - assistants
+      - batch
+      - fine-tune
+      - vision
+      - user_data
+      - evals
+      title: OpenAIFileUploadPurpose
+      description: Valid purpose values for the OpenAI Files upload endpoint.
     OpenAIResponseCompaction:
       properties:
         type:
@@ -13841,63 +13881,6 @@ components:
       - sequence_number
       title: OpenAIResponseObjectStreamError
       type: object
-    ListModelsResponse:
-      description: Response containing a list of model objects.
-      properties:
-        data:
-          description: List of model objects.
-          items:
-            $ref: '#/components/schemas/Model'
-          title: Data
-          type: array
-      required:
-      - data
-      title: ListModelsResponse
-      type: object
-    GetModelRequest:
-      description: Request model for getting a model by ID.
-      properties:
-        model_id:
-          description: The ID of the model to get.
-          title: Model Id
-          type: string
-      required:
-      - model_id
-      title: GetModelRequest
-      type: object
-    UnregisterModelRequest:
-      description: Request model for unregistering a model.
-      properties:
-        model_id:
-          description: The ID of the model to unregister.
-          title: Model Id
-          type: string
-      required:
-      - model_id
-      title: UnregisterModelRequest
-      type: object
-    GetShieldRequest:
-      description: Request model for getting a shield by identifier.
-      properties:
-        identifier:
-          description: The identifier of the shield to get.
-          title: Identifier
-          type: string
-      required:
-      - identifier
-      title: GetShieldRequest
-      type: object
-    UnregisterShieldRequest:
-      description: Request model for unregistering a shield.
-      properties:
-        identifier:
-          description: The identifier of the shield to unregister.
-          title: Identifier
-          type: string
-      required:
-      - identifier
-      title: UnregisterShieldRequest
-      type: object
     TextDelta:
       description: A text content delta for streaming responses.
       properties:
@@ -13970,6 +13953,126 @@ components:
           description: The ID of the tool group to filter tools by.
           nullable: true
       title: ListToolsRequest
+      type: object
+    ConnectorInput:
+      description: Input for creating a connector
+      properties:
+        connector_type:
+          $ref: '#/components/schemas/ConnectorType'
+          default: mcp
+        connector_id:
+          description: Identifier for the connector
+          title: Connector Id
+          type: string
+        url:
+          description: URL of the connector
+          title: Url
+          type: string
+        server_label:
+          anyOf:
+          - type: string
+          - type: 'null'
+          description: Label of the server
+          nullable: true
+      required:
+      - connector_id
+      - url
+      title: ConnectorInput
+      type: object
+    GetConnectorRequest:
+      description: Request model for getting a connector by ID.
+      properties:
+        connector_id:
+          description: Identifier for the connector
+          title: Connector Id
+          type: string
+      required:
+      - connector_id
+      title: GetConnectorRequest
+      type: object
+    ListConnectorToolsRequest:
+      description: Request model for listing tools from a connector.
+      properties:
+        connector_id:
+          description: Identifier for the connector
+          title: Connector Id
+          type: string
+      required:
+      - connector_id
+      title: ListConnectorToolsRequest
+      type: object
+    GetConnectorToolRequest:
+      description: Request model for getting a tool from a connector.
+      properties:
+        connector_id:
+          description: Identifier for the connector
+          title: Connector Id
+          type: string
+        tool_name:
+          description: Name of the tool
+          title: Tool Name
+          type: string
+      required:
+      - connector_id
+      - tool_name
+      title: GetConnectorToolRequest
+      type: object
+    ListModelsResponse:
+      description: Response containing a list of model objects.
+      properties:
+        data:
+          description: List of model objects.
+          items:
+            $ref: '#/components/schemas/Model'
+          title: Data
+          type: array
+      required:
+      - data
+      title: ListModelsResponse
+      type: object
+    GetModelRequest:
+      description: Request model for getting a model by ID.
+      properties:
+        model_id:
+          description: The ID of the model to get.
+          title: Model Id
+          type: string
+      required:
+      - model_id
+      title: GetModelRequest
+      type: object
+    UnregisterModelRequest:
+      description: Request model for unregistering a model.
+      properties:
+        model_id:
+          description: The ID of the model to unregister.
+          title: Model Id
+          type: string
+      required:
+      - model_id
+      title: UnregisterModelRequest
+      type: object
+    GetShieldRequest:
+      description: Request model for getting a shield by identifier.
+      properties:
+        identifier:
+          description: The identifier of the shield to get.
+          title: Identifier
+          type: string
+      required:
+      - identifier
+      title: GetShieldRequest
+      type: object
+    UnregisterShieldRequest:
+      description: Request model for unregistering a shield.
+      properties:
+        identifier:
+          description: The identifier of the shield to unregister.
+          title: Identifier
+          type: string
+      required:
+      - identifier
+      title: UnregisterShieldRequest
       type: object
     Api:
       description: Enumeration of all available APIs in the OGX system.
@@ -14996,69 +15099,6 @@ components:
           - dialog
       title: DialogType
       type: object
-    ConnectorInput:
-      description: Input for creating a connector
-      properties:
-        connector_type:
-          $ref: '#/components/schemas/ConnectorType'
-          default: mcp
-        connector_id:
-          description: Identifier for the connector
-          title: Connector Id
-          type: string
-        url:
-          description: URL of the connector
-          title: Url
-          type: string
-        server_label:
-          anyOf:
-          - type: string
-          - type: 'null'
-          description: Label of the server
-          nullable: true
-      required:
-      - connector_id
-      - url
-      title: ConnectorInput
-      type: object
-    GetConnectorRequest:
-      description: Request model for getting a connector by ID.
-      properties:
-        connector_id:
-          description: Identifier for the connector
-          title: Connector Id
-          type: string
-      required:
-      - connector_id
-      title: GetConnectorRequest
-      type: object
-    ListConnectorToolsRequest:
-      description: Request model for listing tools from a connector.
-      properties:
-        connector_id:
-          description: Identifier for the connector
-          title: Connector Id
-          type: string
-      required:
-      - connector_id
-      title: ListConnectorToolsRequest
-      type: object
-    GetConnectorToolRequest:
-      description: Request model for getting a tool from a connector.
-      properties:
-        connector_id:
-          description: Identifier for the connector
-          title: Connector Id
-          type: string
-        tool_name:
-          description: Name of the tool
-          title: Tool Name
-          type: string
-      required:
-      - connector_id
-      - tool_name
-      title: GetConnectorToolRequest
-      type: object
     ConversationMessage:
       description: OpenAI-compatible message item for conversations.
       properties:
@@ -15106,6 +15146,7 @@ components:
           items:
             discriminator:
               mapping:
+                compaction: '#/components/schemas/OpenAIResponseCompaction'
                 file_search_call: '#/components/schemas/OpenAIResponseOutputMessageFileSearchToolCall'
                 function_call: '#/components/schemas/OpenAIResponseOutputMessageFunctionToolCall'
                 function_call_output: '#/components/schemas/OpenAIResponseInputFunctionToolCallOutput'
@@ -15138,7 +15179,9 @@ components:
               title: OpenAIResponseOutputMessageMCPListTools
             - $ref: '#/components/schemas/OpenAIResponseOutputMessageReasoningItem'
               title: OpenAIResponseOutputMessageReasoningItem
-            title: OpenAIResponseMessage | ... (10 variants)
+            - $ref: '#/components/schemas/OpenAIResponseCompaction'
+              title: OpenAIResponseCompaction
+            title: OpenAIResponseMessage | ... (11 variants)
           maxItems: 20
           title: Items
           type: array
@@ -15397,7 +15440,7 @@ components:
       description: Request model for uploading a file.
       properties:
         purpose:
-          $ref: '#/components/schemas/OpenAIFilePurpose'
+          $ref: '#/components/schemas/OpenAIFileUploadPurpose'
           description: The intended purpose of the uploaded file.
         expires_after:
           anyOf:
