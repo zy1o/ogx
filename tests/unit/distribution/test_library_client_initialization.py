@@ -40,6 +40,9 @@ class TestOGXAsLibraryClientAutoInitialization:
             async def initialize(self):
                 pass
 
+            async def shutdown(self):
+                pass
+
         def mock_initialize_route_impls(impls):
             return mock_route_impls
 
@@ -61,6 +64,9 @@ class TestOGXAsLibraryClientAutoInitialization:
                 self.impls = mock_impls
 
             async def initialize(self):
+                pass
+
+            async def shutdown(self):
                 pass
 
         def mock_initialize_route_impls(impls):
@@ -89,6 +95,9 @@ class TestOGXAsLibraryClientAutoInitialization:
             async def initialize(self):
                 pass
 
+            async def shutdown(self):
+                pass
+
         def mock_initialize_route_impls(impls):
             return mock_route_impls
 
@@ -115,6 +124,9 @@ class TestOGXAsLibraryClientAutoInitialization:
             async def initialize(self):
                 pass
 
+            async def shutdown(self):
+                pass
+
         def mock_initialize_route_impls(impls):
             return mock_route_impls
 
@@ -139,6 +151,9 @@ class TestOGXAsLibraryClientAutoInitialization:
                 self.impls = mock_impls
 
             async def initialize(self):
+                pass
+
+            async def shutdown(self):
                 pass
 
         def mock_initialize_route_impls(impls):
@@ -305,7 +320,8 @@ class TestOGXAsLibraryClientShutdown:
         client = OGXAsLibraryClient("ci-tests")
 
         # Call shutdown multiple times - should not raise
-        # Note: After first shutdown, the loop is closed, so subsequent calls may behave differently
+        client.shutdown()
+        client.shutdown()
         client.shutdown()
 
     def test_async_client_has_shutdown_method(self, monkeypatch):
