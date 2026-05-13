@@ -13,6 +13,7 @@ and ready to use immediately after construction.
 
 import threading
 import time
+import warnings
 
 import pytest
 from ogx_client import NOT_GIVEN, Omit
@@ -540,6 +541,36 @@ class TestOGXAsLibraryClientSyncOnAsync:
             time.sleep(0.01)
         else:
             pytest.fail("Background event loop thread was not cleaned up after init failure")
+
+    @pytest.mark.parametrize("stream", [True, False])
+    def test_sync_client_request_after_shutdown(self, monkeypatch, stream):
+        """ "Test that making a request after shutdown raises a RuntimeError."""
+        mock_impls = {}
+        mock_route_impls = RouteImpls({})
+
+        class MockStack:
+            def __init__(self, config, custom_provider_registry=None):
+                self.impls = mock_impls
+
+            async def initialize(self):
+                pass
+
+            async def shutdown(self):
+                pass
+
+        monkeypatch.setattr("ogx.core.library_client.Stack", MockStack)
+        monkeypatch.setattr("ogx.core.library_client.initialize_route_impls", lambda impls: mock_route_impls)
+
+        client = OGXAsLibraryClient("ci-tests")
+        client.shutdown()
+
+        with warnings.catch_warnings():
+            # this is intentional here/the client is shut down so the coroutine cannot be scheduled and awaited:
+            warnings.filterwarnings("ignore", category=RuntimeWarning, message="coroutine .* was never awaited")
+            with pytest.raises(RuntimeError):
+                result = client.request(options="whatever", cast_to=str, stream=stream)
+                if stream:
+                    list(result)  # To actually trigger the code inside the generator
 
 
 class TestAsyncOGXAsLibraryClientHeaderSanitization:
