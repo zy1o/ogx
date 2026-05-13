@@ -265,6 +265,32 @@ class TestOGXAsLibraryClientShutdown:
         # Shutdown without initialize should not raise
         await client.shutdown()
 
+    def test_sync_client_shutdown_before_initialize(self, monkeypatch):
+        """Test that sync client shutdown works even if never initialized."""
+        mock_impls = {}
+        mock_route_impls = RouteImpls({})
+
+        class MockStack:
+            def __init__(self, config, custom_provider_registry=None):
+                self.impls = mock_impls
+
+            async def initialize(self):
+                pass
+
+            async def shutdown(self):
+                pass
+
+        def mock_initialize_route_impls(impls):
+            return mock_route_impls
+
+        monkeypatch.setattr("ogx.core.library_client.Stack", MockStack)
+        monkeypatch.setattr("ogx.core.library_client.initialize_route_impls", mock_initialize_route_impls)
+
+        client = OGXAsLibraryClient("ci-tests")
+
+        # Shutdown without initialize should not raise
+        client.shutdown()
+
     def test_sync_client_shutdown(self, monkeypatch):
         """Test that sync client shutdown properly shuts down the stack."""
         mock_impls = {}
@@ -323,56 +349,6 @@ class TestOGXAsLibraryClientShutdown:
         client.shutdown()
         client.shutdown()
         client.shutdown()
-
-    def test_async_client_has_shutdown_method(self, monkeypatch):
-        """Verify AsyncOGXAsLibraryClient has shutdown method."""
-        mock_impls = {}
-        mock_route_impls = RouteImpls({})
-
-        class MockStack:
-            def __init__(self, config, custom_provider_registry=None):
-                self.impls = mock_impls
-
-            async def initialize(self):
-                pass
-
-            async def shutdown(self):
-                pass
-
-        def mock_initialize_route_impls(impls):
-            return mock_route_impls
-
-        monkeypatch.setattr("ogx.core.library_client.Stack", MockStack)
-        monkeypatch.setattr("ogx.core.library_client.initialize_route_impls", mock_initialize_route_impls)
-
-        client = AsyncOGXAsLibraryClient("ci-tests")
-        assert hasattr(client, "shutdown")
-        assert callable(client.shutdown)
-
-    def test_sync_client_has_shutdown_method(self, monkeypatch):
-        """Verify OGXAsLibraryClient has shutdown method."""
-        mock_impls = {}
-        mock_route_impls = RouteImpls({})
-
-        class MockStack:
-            def __init__(self, config, custom_provider_registry=None):
-                self.impls = mock_impls
-
-            async def initialize(self):
-                pass
-
-            async def shutdown(self):
-                pass
-
-        def mock_initialize_route_impls(impls):
-            return mock_route_impls
-
-        monkeypatch.setattr("ogx.core.library_client.Stack", MockStack)
-        monkeypatch.setattr("ogx.core.library_client.initialize_route_impls", mock_initialize_route_impls)
-
-        client = OGXAsLibraryClient("ci-tests")
-        assert hasattr(client, "shutdown")
-        assert callable(client.shutdown)
 
 
 class TestOGXAsLibraryClientContextManager:
@@ -493,56 +469,6 @@ class TestOGXAsLibraryClientContextManager:
 
         # Verify shutdown was still called
         assert len(shutdown_called) == 1
-
-    def test_async_client_has_context_manager_methods(self, monkeypatch):
-        """Verify AsyncOGXAsLibraryClient has context manager methods."""
-        mock_impls = {}
-        mock_route_impls = RouteImpls({})
-
-        class MockStack:
-            def __init__(self, config, custom_provider_registry=None):
-                self.impls = mock_impls
-
-            async def initialize(self):
-                pass
-
-            async def shutdown(self):
-                pass
-
-        def mock_initialize_route_impls(impls):
-            return mock_route_impls
-
-        monkeypatch.setattr("ogx.core.library_client.Stack", MockStack)
-        monkeypatch.setattr("ogx.core.library_client.initialize_route_impls", mock_initialize_route_impls)
-
-        client = AsyncOGXAsLibraryClient("ci-tests")
-        assert hasattr(client, "__aenter__")
-        assert hasattr(client, "__aexit__")
-
-    def test_sync_client_has_context_manager_methods(self, monkeypatch):
-        """Verify OGXAsLibraryClient has context manager methods."""
-        mock_impls = {}
-        mock_route_impls = RouteImpls({})
-
-        class MockStack:
-            def __init__(self, config, custom_provider_registry=None):
-                self.impls = mock_impls
-
-            async def initialize(self):
-                pass
-
-            async def shutdown(self):
-                pass
-
-        def mock_initialize_route_impls(impls):
-            return mock_route_impls
-
-        monkeypatch.setattr("ogx.core.library_client.Stack", MockStack)
-        monkeypatch.setattr("ogx.core.library_client.initialize_route_impls", mock_initialize_route_impls)
-
-        client = OGXAsLibraryClient("ci-tests")
-        assert hasattr(client, "__enter__")
-        assert hasattr(client, "__exit__")
 
 
 class TestOGXAsLibraryClientSyncOnAsync:
